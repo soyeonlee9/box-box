@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Github } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
     const router = useRouter();
     const { user, setIsLoggingInAsSuperAdmin } = useAuthStore();
+
+    const [showAdminDialog, setShowAdminDialog] = useState(false);
+    const [adminPassword, setAdminPassword] = useState("");
+    const [adminError, setAdminError] = useState("");
 
     useEffect(() => {
         // 이미 로그인된 경우 대시보드로 리다이렉트
@@ -22,6 +28,23 @@ export default function LoginPage() {
             }
         }
     }, [user, router]);
+
+    const handleSuperAdminClick = () => {
+        setAdminPassword("");
+        setAdminError("");
+        setShowAdminDialog(true);
+    };
+
+    const handleSuperAdminSubmit = () => {
+        // 실제 운영 환경에서는 환경변수로 관리합니다.
+        const masterPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "archetype2024!";
+        if (adminPassword === masterPassword) {
+            setShowAdminDialog(false);
+            handleKakaoLogin(true);
+        } else {
+            setAdminError("비밀번호가 일치하지 않습니다.");
+        }
+    };
 
     const handleKakaoLogin = async (asSuperAdmin: boolean = false) => {
         setIsLoggingInAsSuperAdmin(asSuperAdmin);
@@ -106,12 +129,39 @@ export default function LoginPage() {
                     <Button
                         variant="ghost"
                         className="w-full text-xs text-gray-500 hover:text-gray-900"
-                        onClick={() => handleKakaoLogin(true)}
+                        onClick={handleSuperAdminClick}
                     >
                         👑 최고 관리자 접속하기
                     </Button>
                 </CardContent>
             </Card>
+
+            {/* 최고 관리자 비밀번호 확인 모달 */}
+            <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>최고 관리자 인증</DialogTitle>
+                        <DialogDescription>
+                            이 기능은 시스템 총괄 관리자만 접근할 수 있습니다. 관리자 비밀번호를 입력해주세요.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Input
+                            type="password"
+                            placeholder="비밀번호 입력"
+                            value={adminPassword}
+                            onChange={(e) => setAdminPassword(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSuperAdminSubmit()}
+                            autoFocus
+                        />
+                        {adminError && <p className="text-sm text-destructive mt-2 font-medium">{adminError}</p>}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowAdminDialog(false)}>취소</Button>
+                        <Button onClick={handleSuperAdminSubmit}>접속하기</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
