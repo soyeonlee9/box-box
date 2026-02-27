@@ -50,7 +50,7 @@ export default function AuthCallbackPage() {
                 setAuth(data.user, data.token);
 
                 // 4. 권한에 따른 대시보드 리다이렉트
-                if (data.user?.role === 'super_admin' && isLoggingInAsSuperAdmin) {
+                if (data.user?.role === 'super_admin') {
                     router.push("/superadmin/brands");
                 } else {
                     router.push("/");
