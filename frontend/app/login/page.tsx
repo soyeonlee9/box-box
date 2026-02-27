@@ -38,7 +38,7 @@ export default function LoginPage() {
     const handleSuperAdminSubmit = () => {
         // 실제 운영 환경에서는 환경변수로 관리합니다.
         const masterPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "961020";
-        if (adminPassword === masterPassword) {
+        if (adminPassword.trim() === masterPassword) {
             setShowAdminDialog(false);
             handleKakaoLogin(true);
         } else {
