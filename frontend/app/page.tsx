@@ -47,15 +47,16 @@ export default function SummaryReportPage() {
   const [loading, setLoading] = useState(true)
 
   // Brand creation state
-  const { user, setAuth, token, setSelectedBrandId, setSelectedBrandName } = useAuthStore()
+  const { user, setAuth, token, selectedBrandId, setSelectedBrandId, setSelectedBrandName } = useAuthStore()
   const [newBrandName, setNewBrandName] = useState("")
   const [isCreatingBrand, setIsCreatingBrand] = useState(false)
 
   useEffect(() => {
-    if (user?.role === 'super_admin') {
+    // 최고관리자이면서, 특정 브랜드를 '관전(impersonate)' 중이지 않을 때만 포털로 이동
+    if (user?.role === 'super_admin' && !selectedBrandId) {
       router.push("/superadmin/brands")
     }
-  }, [user, router])
+  }, [user, router, selectedBrandId])
 
   useEffect(() => {
     async function fetchSummary() {
@@ -137,7 +138,7 @@ export default function SummaryReportPage() {
   }
 
   // Handle super_admin immediate redirect state (prevents UI flicker)
-  if (user?.role === 'super_admin') {
+  if (user?.role === 'super_admin' && !selectedBrandId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#2D6A4F] border-t-transparent"></div>
