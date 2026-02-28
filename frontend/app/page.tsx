@@ -236,7 +236,7 @@ export default function SummaryReportPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground">{"\uC694\uC57D \uB9AC\uD3EC\uD2B8"}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {"\uCE94\uD398\uC778 \uD604\uD669\uC744 5\uCD08 \uC548\uC5D0 \uD30C\uC545\uD558\uC138\uC694"}
+              {"\uCE98\uD398\uC778 \uD604\uD669\uC744 5\uCD08 \uC548\uC5D0 \uD30C\uC545\uD558\uC138\uC694"}
             </p>
           </div>
 
@@ -361,12 +361,12 @@ export default function SummaryReportPage() {
         ═══════════════════════════════════════════════════ */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">{"\uCE94\uD398\uC778 \uC131\uACFC \uC2E0\uD638\uB4F1"}</h2>
+              <h2 className="text-sm font-semibold text-foreground">{"\uCE98\uD398\uC778 \uC131\uACFC \uC2E0\uD638\uB4F1"}</h2>
               <Link
                 href="/campaigns"
                 className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                {"\uC804\uCCB4 \uCE94\uD398\uC778 \uBCF4\uAE30"}
+                {"\uC804\uCCB4 \uCE98\uD398\uC778 \uBCF4\uAE30"}
                 <ChevronRight className="size-3" />
               </Link>
             </div>
@@ -376,7 +376,7 @@ export default function SummaryReportPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                     <span className="flex size-3 rounded-full bg-primary" />
-                    TOP 3 {"\uCE94\uD398\uC778"}
+                    TOP 3 {"\uCE98\uD398\uC778"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -404,7 +404,7 @@ export default function SummaryReportPage() {
                     ))}
                   </ul>
                   <div className="mt-4 rounded-lg bg-card p-3 text-xs text-primary font-medium">
-                    {"\uD83D\uDCA1"} {"\uC798\uB418\uB294 \uCE94\uD398\uC778\uC740 \uC608\uC0B0\uC744 \uB298\uB824 \uC131\uACFC\uB97C \uADF9\uB300\uD654\uD558\uC138\uC694."}
+                    {"\uD83D\uDCA1"} {"\uC798\uB418\uB294 \uCE98\uD398\uC778\uC740 \uC608\uC0B0\uC744 \uB298\uB824 \uC131\uACFC\uB97C \uADF9\uB300\uD654\uD558\uC138\uC694."}
                   </div>
                 </CardContent>
               </Card>
@@ -414,7 +414,7 @@ export default function SummaryReportPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                     <span className="flex size-3 rounded-full bg-destructive" />
-                    BOTTOM 3 {"\uCE94\uD398\uC778"}
+                    BOTTOM 3 {"\uCE98\uD398\uC778"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -442,7 +442,7 @@ export default function SummaryReportPage() {
                     ))}
                   </ul>
                   <div className="mt-4 rounded-lg bg-card p-3 text-xs text-destructive font-medium">
-                    {"\u26A0\uFE0F"} {"\uC131\uACFC\uAC00 \uB0AE\uC740 \uCE94\uD398\uC778\uC740 \uC6D0\uC778\uC744 \uBD84\uC11D\uD558\uAC70\uB098 \uC870\uAE30 \uC885\uB8CC\uB97C \uACE0\uB824\uD574\uBCF4\uC138\uC694."}
+                    {"\u26A0\uFE0F"} {"\uC131\uACFC\uAC00 \uB0AE\uC740 \uCE98\uD398\uC778\uC740 \uC6D0\uC778\uC744 \uBD84\uC11D\uD558\uAC70\uB098 \uC870\uAE30 \uC885\uB8CC\uB97C \uACE0\uB824\uD574\uBCF4\uC138\uC694."}
                   </div>
                 </CardContent>
               </Card>
