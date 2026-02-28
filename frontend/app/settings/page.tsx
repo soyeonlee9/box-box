@@ -330,7 +330,7 @@ function BrandTab() {
    3. Notifications Tab
    ═══════════════════════════════════ */
 function NotificationsTab() {
-  const { notificationSettings, setNotificationSettings } = useAuthStore()
+  const { user, notificationSettings, setNotificationSettings } = useAuthStore()
 
   const emailOn = notificationSettings?.email ?? true
   const inAppOn = notificationSettings?.inApp ?? true
@@ -366,16 +366,26 @@ function NotificationsTab() {
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-medium text-foreground">이메일 알림</span>
-              <span className="text-xs text-muted-foreground">manager@brand.com으로 알림을 받습니다.</span>
+              <span className="text-xs text-muted-foreground">{user?.email || "가입한 이메일"}으로 알림을 받습니다.</span>
             </div>
-            <Switch checked={emailOn} onCheckedChange={setEmailOn} />
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={() => toast.success("테스트 이메일이 발송되었습니다!", { description: `${user?.email} 메일함을 확인해주세요.` })}>
+                테스트 발송
+              </Button>
+              <Switch checked={emailOn} onCheckedChange={setEmailOn} />
+            </div>
           </div>
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-medium text-foreground">인앱 알림</span>
-              <span className="text-xs text-muted-foreground">대시보드 내 알림 센터로 알림을 받습니다.</span>
+              <span className="text-xs text-muted-foreground">대시보드 내 알림으로 정보를 받습니다.</span>
             </div>
-            <Switch checked={inAppOn} onCheckedChange={setInAppOn} />
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={() => toast("🔔 테스트 인앱 알림이 도착했습니다!", { description: "목표 달성, 리워드 발급 등 알림이 여기에 표시됩니다." })}>
+                테스트 발송
+              </Button>
+              <Switch checked={inAppOn} onCheckedChange={setInAppOn} />
+            </div>
           </div>
         </CardContent>
       </Card>
