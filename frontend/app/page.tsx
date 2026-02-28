@@ -15,6 +15,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip"
 ═══════════════════════════════════════════════════════════ */
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { apiFetch } from "@/lib/api"
 import { useAuthStore } from "@/store/useAuthStore"
 import { Input } from "@/components/ui/input"
@@ -41,6 +42,7 @@ interface SummaryData {
 }
 
 export default function SummaryReportPage() {
+  const router = useRouter()
   const [data, setData] = useState<SummaryData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -48,6 +50,12 @@ export default function SummaryReportPage() {
   const { user, setAuth, token, setSelectedBrandId, setSelectedBrandName } = useAuthStore()
   const [newBrandName, setNewBrandName] = useState("")
   const [isCreatingBrand, setIsCreatingBrand] = useState(false)
+
+  useEffect(() => {
+    if (user?.role === 'super_admin') {
+      router.push("/superadmin/brands")
+    }
+  }, [user, router])
 
   useEffect(() => {
     async function fetchSummary() {
@@ -124,6 +132,15 @@ export default function SummaryReportPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground animate-pulse">데이터를 불러오는 중입니다...</p>
+      </div>
+    )
+  }
+
+  // Handle super_admin immediate redirect state (prevents UI flicker)
+  if (user?.role === 'super_admin') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#2D6A4F] border-t-transparent"></div>
       </div>
     )
   }

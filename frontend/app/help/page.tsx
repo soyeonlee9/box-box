@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DesktopSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
-import { useTutorial } from "@/components/tutorial/tutorial-provider"
 
 const chapters = [
   {
@@ -109,7 +108,6 @@ const chapters = [
 ]
 
 export default function HelpPage() {
-  const { start } = useTutorial()
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,13 +126,6 @@ export default function HelpPage() {
                 Archetype Insights 대시보드의 모든 기능을 활용하는 방법을 알아보세요.
               </p>
             </div>
-            <Button
-              onClick={() => start()}
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <PlayCircle className="size-4" />
-              튜토리얼 다시 보기
-            </Button>
           </div>
 
           {/* Hero card */}

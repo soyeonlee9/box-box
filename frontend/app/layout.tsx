@@ -2,9 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter, Space_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
-import { TutorialShell } from "@/components/tutorial/tutorial-shell"
 import { Toaster } from "@/components/ui/sonner"
-import { OnboardingTour } from "@/components/onboarding-tour"
 import { AuthProvider } from "@/components/providers/AuthProvider"
 
 const inter = Inter({
@@ -58,11 +56,8 @@ export default function RootLayout({
         className={`${inter.variable} ${spaceMono.variable} font-sans antialiased`}
       >
         <AuthProvider>
-          <TutorialShell>
-            {children}
-          </TutorialShell>
+          {children}
           <Toaster />
-          <OnboardingTour />
         </AuthProvider>
         <Analytics />
       </body>

@@ -43,19 +43,15 @@ import {
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { MobileSidebar } from "./sidebar"
-import { useTutorial } from "@/components/tutorial/tutorial-provider"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { useRestartTour } from "@/components/onboarding-tour"
 import { apiFetch } from "@/lib/api"
 import { useAuthStore } from "@/store/useAuthStore"
 import { supabase } from "@/lib/supabase"
 
 
 export function DashboardHeader() {
-  const { start } = useTutorial()
   const router = useRouter()
-  const restartTour = useRestartTour()
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState("")
 
@@ -169,13 +165,6 @@ export function DashboardHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem onClick={() => start()} className="gap-2.5 cursor-pointer">
-                <PlayCircle className="size-4 text-primary" /><span>가이드 투어 시작</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={restartTour} className="gap-2.5 cursor-pointer">
-                <PlayCircle className="size-4 text-muted-foreground" /><span>튜토리얼 다시 보기</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/help")} className="gap-2.5 cursor-pointer">
                 <BookOpen className="size-4 text-muted-foreground" /><span>도움말 페이지</span>
               </DropdownMenuItem>
