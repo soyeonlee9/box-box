@@ -55,7 +55,7 @@ export function DashboardHeader() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState("")
 
-  const user = useAuthStore((state) => state.user)
+  const { user, inAppNotifications, setInAppNotifications, clearInAppNotifications } = useAuthStore()
   const [headerData, setHeaderData] = useState<any>(null)
 
   useEffect(() => {
@@ -63,7 +63,9 @@ export function DashboardHeader() {
       try {
         const data = await apiFetch("/user/header")
         setHeaderData(data)
-        setNotiList(data?.notifications || [])
+        if (inAppNotifications.length === 0) {
+          setInAppNotifications(data?.notifications || [])
+        }
       } catch (err) {
         console.error("Error fetching header data:", err)
       }
@@ -73,9 +75,7 @@ export function DashboardHeader() {
 
   const searchResults = headerData?.searchResults || []
 
-  const [notiList, setNotiList] = useState<any[]>([])
-
-  const unreadNotiCount = notiList.length
+  const unreadNotiCount = inAppNotifications.length
 
   const filtered = query.trim()
     ? searchResults.filter(
@@ -86,7 +86,7 @@ export function DashboardHeader() {
     : searchResults
 
   function clearNotifications() {
-    setNotiList([])
+    clearInAppNotifications()
     toast.success("모든 알림을 삭제했습니다.")
   }
 
@@ -141,10 +141,10 @@ export function DashboardHeader() {
                 )}
               </div>
               <DropdownMenuSeparator />
-              {notiList.length === 0 ? (
+              {inAppNotifications.length === 0 ? (
                 <div className="px-3 py-6 text-center text-sm text-muted-foreground">알림이 없습니다.</div>
               ) : (
-                notiList.map((noti) => (
+                inAppNotifications.map((noti) => (
                   <DropdownMenuItem key={noti.id} className="flex items-start gap-3 px-3 py-2.5 cursor-pointer" onClick={() => toast(noti.text)}>
                     <span className={`mt-1 size-2 shrink-0 rounded-full ${noti.type === "anomaly" ? "bg-destructive animate-pulse" : noti.type === "success" ? "bg-primary" : noti.type === "warning" ? "bg-amber-500" : "bg-blue-500"}`} />
                     <div className="flex-1 min-w-0">

@@ -330,7 +330,7 @@ function BrandTab() {
    3. Notifications Tab
    ═══════════════════════════════════ */
 function NotificationsTab() {
-  const { user, notificationSettings, setNotificationSettings } = useAuthStore()
+  const { user, notificationSettings, setNotificationSettings, addInAppNotification } = useAuthStore()
 
   const emailOn = notificationSettings?.email ?? true
   const inAppOn = notificationSettings?.inApp ?? true
@@ -369,7 +369,15 @@ function NotificationsTab() {
               <span className="text-xs text-muted-foreground">{user?.email || "가입한 이메일"}으로 알림을 받습니다.</span>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => toast.success("테스트 이메일이 발송되었습니다!", { description: `${user?.email} 메일함을 확인해주세요.` })}>
+              <Button variant="outline" size="sm" onClick={() => {
+                toast.promise(new Promise(resolve => setTimeout(resolve, 800)), {
+                  loading: '이메일 발송 중...',
+                  success: () => {
+                    return `테스트 이메일이 발송되었습니다! (${user?.email || "가입한 이메일"})`
+                  },
+                  error: '발송 실패'
+                })
+              }}>
                 테스트 발송
               </Button>
               <Switch checked={emailOn} onCheckedChange={setEmailOn} />
@@ -381,7 +389,10 @@ function NotificationsTab() {
               <span className="text-xs text-muted-foreground">대시보드 내 알림으로 정보를 받습니다.</span>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => toast("🔔 테스트 인앱 알림이 도착했습니다!", { description: "목표 달성, 리워드 발급 등 알림이 여기에 표시됩니다." })}>
+              <Button variant="outline" size="sm" onClick={() => {
+                addInAppNotification({ type: "info", text: "🔔 테스트 인앱 알림이 도착했습니다!" })
+                toast("🔔 상단 종 모양 아이콘에 알림이 추가되었습니다.", { description: "목표 달성, 리워드 발급 등 알림이 기록됩니다." })
+              }}>
                 테스트 발송
               </Button>
               <Switch checked={inAppOn} onCheckedChange={setInAppOn} />
