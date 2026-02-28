@@ -75,7 +75,8 @@ export const testEmail = async (req: Request, res: Response) => {
 
         const { data, error } = await resend.emails.send({
             from: 'onboarding@resend.dev',
-            to: targetEmail,
+            // Resend 테스트 모드에서는 가입된 소유자 이메일로만 발송 가능합니다.
+            to: 'soyeon96120@gmail.com',
             subject: '🔔 아키타이프(Archetype) 테스트 알림 이메일',
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
