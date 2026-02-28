@@ -322,40 +322,6 @@ function BrandTab() {
         </CardContent>
       </Card>
 
-      {/* White Label */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">화이트 라벨 설정</CardTitle>
-            <Badge variant="outline" className="text-xs font-medium">고급</Badge>
-          </div>
-          <CardDescription>
-            자체 도메인과 로고로 대시보드를 커스터마이징합니다.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="custom-domain">커스텀 도메인</Label>
-            <div className="flex items-center gap-2">
-              <Globe className="size-4 text-muted-foreground shrink-0" />
-              <Input id="custom-domain" placeholder="analytics.mybrand.com" className="flex-1" />
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {'DNS 설정에서 CNAME 레코드를 '}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">cname.archetype-insights.com</code>
-              {'으로 연결하세요.'}
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-border p-4">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-foreground">대시보드에 브랜드 로고 적용</span>
-              <span className="text-xs text-muted-foreground">좌측 상단 로고를 업로드한 브랜드 로고로 대체합니다.</span>
-            </div>
-            <Switch checked={useCustomLogo} onCheckedChange={setUseCustomLogo} />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
@@ -364,8 +330,22 @@ function BrandTab() {
    3. Notifications Tab
    ═══════════════════════════════════ */
 function NotificationsTab() {
-  const [emailOn, setEmailOn] = useState(true)
-  const [inAppOn, setInAppOn] = useState(true)
+  const { notificationSettings, setNotificationSettings } = useAuthStore()
+
+  const emailOn = notificationSettings?.email ?? true
+  const inAppOn = notificationSettings?.inApp ?? true
+
+  const setEmailOn = (val: boolean) => {
+    setNotificationSettings({ ...notificationSettings, email: val })
+    if (val) toast.success("이메일 알림이 켜졌습니다.")
+    else toast("이메일 알림이 꺼졌습니다.")
+  }
+
+  const setInAppOn = (val: boolean) => {
+    setNotificationSettings({ ...notificationSettings, inApp: val })
+    if (val) toast.success("인앱 알림이 켜졌습니다.")
+    else toast("인앱 알림이 꺼졌습니다.")
+  }
 
   const events = [
     { label: "주간 성과 요약 리포트", desc: "매주 월요일 아침, 지난주 성과 요약 이메일", emailDefault: true, inAppDefault: false },
@@ -762,7 +742,7 @@ const plans = [
   {
     name: "Pro",
     price: "₩49,000/월",
-    features: ["10,000 QR 스캔/월", "5 팀 멤버", "고급 분석 & 퍼널", "API 접근", "화이트라벨", "우선 지원"],
+    features: ["10,000 QR 스캔/월", "5 팀 멤버", "고급 분석 & 퍼널", "API 접근", "우선 지원"],
     current: true,
   },
   {
@@ -819,7 +799,7 @@ function BillingTab() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {["10,000 QR 스캔/월", "5 팀 멤버", "고급 분석 & 퍼널", "API 접근", "화이트라벨", "우선 지원"].map((f) => (
+            {["10,000 QR 스캔/월", "5 팀 멤버", "고급 분석 & 퍼널", "API 접근", "우선 지원"].map((f) => (
               <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Check className="size-3.5 text-primary shrink-0" />
                 {f}
