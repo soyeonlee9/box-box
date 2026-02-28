@@ -67,6 +67,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { InfoTooltip, GLOSSARY } from "@/components/ui/info-tooltip"
 import { useAuthStore } from "@/store/useAuthStore"
+import { apiFetch } from "@/lib/api"
 
 /* ─── data ─── */
 const tabs = [
@@ -370,12 +371,12 @@ function NotificationsTab() {
             </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm" onClick={() => {
-                toast.promise(new Promise(resolve => setTimeout(resolve, 800)), {
+                toast.promise(apiFetch("/user/test-email", { method: "POST", body: JSON.stringify({ email: user?.email }) }), {
                   loading: '이메일 발송 중...',
                   success: () => {
-                    return `테스트 이메일이 발송되었습니다! (${user?.email || "가입한 이메일"})`
+                    return `테스트 이메일이 발송 요청되었습니다! (${user?.email || "가입한 이메일"})`
                   },
-                  error: '발송 실패'
+                  error: (err: any) => err.message || '발송 실패'
                 })
               }}>
                 테스트 발송
