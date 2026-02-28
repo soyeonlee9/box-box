@@ -233,7 +233,7 @@ export default function AnalyticsPage() {
           {/* ── Section 2: Funnel + NPS/Sentiment ── */}
           <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-5">
             {/* Funnel Chart (3 cols) */}
-            <Card className="xl:col-span-3" data-tour="funnel-chart">
+            <Card className="flex flex-col xl:col-span-3" data-tour="funnel-chart">
               <CardHeader>
                 <div className="flex items-center gap-1.5">
                   <CardTitle className="text-base font-semibold">고객 행동 단계 분석</CardTitle>
@@ -243,7 +243,7 @@ export default function AnalyticsPage() {
                   {'QR 스캔 → 랜딩페이지 → 콘텐츠 클릭 → 전환 완료'}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-1 flex-col justify-center">
                 <ChartContainer
                   config={{
                     value: { label: "고객 수", color: GREEN },
@@ -294,73 +294,69 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
 
-            {/* NPS + Sentiment (2 cols) */}
-            <div className="flex flex-col gap-4 xl:col-span-2">
-              {/* NPS Gauge */}
-              <Card>
-                <CardHeader className="pb-2">
+            {/* NPS (2 cols) */}
+            <Card className="flex flex-col xl:col-span-2">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-1.5">
+                  <CardTitle className="text-base font-semibold">고객 추천 지수 (NPS)</CardTitle>
+                  <InfoTooltip content={GLOSSARY.nps} />
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col items-center justify-center">
+                <ChartContainer
+                  config={{
+                    value: { label: "NPS", color: GREEN },
+                  }}
+                  className="h-[160px] w-full"
+                >
+                  <PieChart>
+                    <Pie
+                      data={npsData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={70}
+                      startAngle={180}
+                      endAngle={0}
+                      paddingAngle={2}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {npsData.map((entry: any) => (
+                        <Cell key={entry.name} fill={entry.fill} />
+                      ))}
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text x={viewBox.cx} y={(viewBox.cy || 0) - 5} textAnchor="middle" dominantBaseline="middle">
+                                <tspan className="text-3xl font-bold" fill={GREEN}>
+                                  {npsScore}
+                                </tspan>
+                              </text>
+                            )
+                          }
+                        }}
+                      />
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+                <div className="flex items-center gap-4 -mt-6">
                   <div className="flex items-center gap-1.5">
-                    <CardTitle className="text-base font-semibold">고객 추천 지수 (NPS)</CardTitle>
-                    <InfoTooltip content={GLOSSARY.nps} />
+                    <div className="size-2.5 rounded-full" style={{ backgroundColor: GREEN }} />
+                    <span className="text-xs text-muted-foreground">추천 72%</span>
                   </div>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <ChartContainer
-                    config={{
-                      value: { label: "NPS", color: GREEN },
-                    }}
-                    className="h-[160px] w-full"
-                  >
-                    <PieChart>
-                      <Pie
-                        data={npsData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={70}
-                        startAngle={180}
-                        endAngle={0}
-                        paddingAngle={2}
-                        dataKey="value"
-                        strokeWidth={0}
-                      >
-                        {npsData.map((entry: any) => (
-                          <Cell key={entry.name} fill={entry.fill} />
-                        ))}
-                        <Label
-                          content={({ viewBox }) => {
-                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                              return (
-                                <text x={viewBox.cx} y={(viewBox.cy || 0) - 5} textAnchor="middle" dominantBaseline="middle">
-                                  <tspan className="text-3xl font-bold" fill={GREEN}>
-                                    {npsScore}
-                                  </tspan>
-                                </text>
-                              )
-                            }
-                          }}
-                        />
-                      </Pie>
-                    </PieChart>
-                  </ChartContainer>
-                  <div className="flex items-center gap-4 -mt-6">
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-2.5 rounded-full" style={{ backgroundColor: GREEN }} />
-                      <span className="text-xs text-muted-foreground">추천 72%</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-2.5 rounded-full" style={{ backgroundColor: GREEN_PALE }} />
-                      <span className="text-xs text-muted-foreground">중립 18%</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-2.5 rounded-full bg-destructive" />
-                      <span className="text-xs text-muted-foreground">비추천 10%</span>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-2.5 rounded-full" style={{ backgroundColor: GREEN_PALE }} />
+                    <span className="text-xs text-muted-foreground">중립 18%</span>
                   </div>
-                </CardContent>
-              </Card>
-
-            </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-2.5 rounded-full bg-destructive" />
+                    <span className="text-xs text-muted-foreground">비추천 10%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* ── Section 3: Hourly + Region + Device ── */}
@@ -515,10 +511,10 @@ export default function AnalyticsPage() {
             </Card>
           </div>
 
-          {/* ── Section 5: USS ── */}
-          <div className="mt-6">
+          {/* ── Section 5 & 6: USS + AI Insights ── */}
+          <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
             {/* USS - Unboxing Satisfaction Score */}
-            <Card className="max-w-md">
+            <Card className="flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <Star className="size-4 text-amber-500" />
@@ -560,36 +556,36 @@ export default function AnalyticsPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* ── Section 6: AI Insights ── */}
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <Lightbulb className="size-5 text-primary" />
-                AI 인사이트 요약
-              </CardTitle>
-              <CardDescription>데이터를 기반으로 자동 생성된 마케팅 추천 사항</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="flex flex-col gap-4">
-                {insights.map((item: any) => {
-                  const InsightIcon = iconMap[item.iconType] || Clock;
-                  return (
-                    <li key={item.title} className="flex gap-4 rounded-xl border border-border bg-secondary/40 p-4">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <InsightIcon className="size-4 text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.text}</p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </CardContent>
-          </Card>
+            {/* ── Section 6: AI Insights ── */}
+            <Card className="flex flex-col xl:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Lightbulb className="size-5 text-primary" />
+                  AI 인사이트 요약
+                </CardTitle>
+                <CardDescription>데이터를 기반으로 자동 생성된 마케팅 추천 사항</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="flex flex-col gap-4">
+                  {insights.map((item: any) => {
+                    const InsightIcon = iconMap[item.iconType] || Clock;
+                    return (
+                      <li key={item.title} className="flex gap-4 rounded-xl border border-border bg-secondary/40 p-4">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                          <InsightIcon className="size-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
 
