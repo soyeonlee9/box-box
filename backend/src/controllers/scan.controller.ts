@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
+import { dispatchNotification } from '../services/notification.service';
 
 /**
  * QR 스캔 처리 로직
@@ -69,8 +70,41 @@ export const recordScan = async (req: Request, res: Response) => {
                     if (!badgeError) {
                         badgeEarned = true;
                         earnedBadgeDetails = badgeToGive;
+
+                        // 배지 획득 알림 발송
+                        await dispatchNotification(
+                            user_id,
+                            scanData.brand_id, // qr_scans doesn't have brand_id directly, campaigns does. Let's fetch campaign's brand_id if needed, but we can pass null if not strictly required for brand-level tracking, or fetch it.
+                            'badge_earned',
+                            '🎉 새로운 배지를 획득하셨습니다!',
+                            `스캔 목표를 달성하여 '${badgeToGive.name}' 배지를 얻었습니다.`,
+                            `<div style="font-family: sans-serif; text-align: center;">
+                                <h2>축하합니다!</h2>
+                                <p>새로운 <strong>${badgeToGive.name}</strong> 배지를 획득하셨습니다.</p>
+                                ${badgeToGive.image_url ? `<img src="${badgeToGive.image_url}" width="100" />` : ''}
+                                <p>앱에서 확인해보세요!</p>
+                             </div>`
+                        );
                     }
                 }
+            }
+
+            // 캠페인 스캔 마일스톤 알림 (예: 10회, 100회 등 특정 횟수 달성 시)
+            const milestones = [10, 50, 100, 500, 1000];
+            if (count && milestones.includes(count)) {
+                // Fetch brand_id from campaign to know who to notify if it's a brand's campaign
+                // For users, they might get notified of their own milestone
+                await dispatchNotification(
+                    user_id,
+                    null,
+                    'campaign_milestone',
+                    '🎯 캠페인 목표 달성!',
+                    `현재 캠페인에서 총 ${count}회 스캔을 달성했습니다.`,
+                    `<div style="font-family: sans-serif; padding: 20px;">
+                        <h2>목표 달성!</h2>
+                        <p>고객님께서 참여 중인 캠페인에서 <strong>${count}회</strong> 스캔이라는 놀라운 기록을 달성하셨습니다.</p>
+                     </div>`
+                );
             }
         }
 

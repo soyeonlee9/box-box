@@ -107,3 +107,51 @@ export const testEmail = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const getNotifications = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const { data, error } = await supabase
+            .from('notification_logs')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        res.status(200).json(data);
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const updateNotificationSettings = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        const preferences = req.body.preferences;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const { data, error } = await supabase
+            .from('users')
+            .update({ notification_preferences: preferences })
+            .eq('id', userId)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.status(200).json({ message: '설정이 저장되었습니다.', preferences: data.notification_preferences });
+    } catch (error) {
+        console.error('Error updating notification settings:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

@@ -61,10 +61,21 @@ export function DashboardHeader() {
   useEffect(() => {
     async function fetchHeaderData() {
       try {
-        const data = await apiFetch("/user/header")
-        setHeaderData(data)
-        if (inAppNotifications.length === 0) {
-          setInAppNotifications(data?.notifications || [])
+        const [headerRes, notiRes] = await Promise.all([
+          apiFetch("/user/header"),
+          apiFetch("/user/notifications")
+        ])
+        setHeaderData(headerRes)
+
+        // Transform backend notification format to the expected frontend format
+        if (notiRes && Array.isArray(notiRes)) {
+          const formattedNotis = notiRes.map(n => ({
+            id: n.id,
+            type: n.type === 'campaign_milestone' ? 'success' : n.type === 'badge_earned' ? 'info' : 'warning',
+            text: n.title,
+            time: new Date(n.created_at).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          }))
+          setInAppNotifications(formattedNotis)
         }
       } catch (err) {
         console.error("Error fetching header data:", err)

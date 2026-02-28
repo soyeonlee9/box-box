@@ -7,6 +7,7 @@ import badgesRoutes from './badges.routes';
 import rewardsRoutes from './rewards.routes';
 import scanRoutes from './scan.routes';
 import adminRoutes from './admin.routes';
+import teamRoutes from './team.routes';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/badges', badgesRoutes);
 router.use('/rewards', rewardsRoutes);
 router.use('/scan', scanRoutes);
 router.use('/admin/brands', adminRoutes);
+router.use('/team', teamRoutes);
 
 export default router;

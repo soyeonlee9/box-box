@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import {
   User,
@@ -79,13 +79,6 @@ const tabs = [
 ] as const
 
 type TabId = (typeof tabs)[number]["id"]
-
-const teamMembers = [
-  { name: "김민수", email: "minsu@brand.com", role: "Admin", lastAccess: "2026-02-25", avatar: "" },
-  { name: "이수진", email: "sujin@brand.com", role: "Editor", lastAccess: "2026-02-24", avatar: "" },
-  { name: "박지훈", email: "jihoon@brand.com", role: "Viewer", lastAccess: "2026-02-20", avatar: "" },
-  { name: "최윤아", email: "yuna@brand.com", role: "Editor", lastAccess: "2026-02-23", avatar: "" },
-]
 
 const apiKeys = [
   { id: "ak_1", name: "Production Key", key: "ak_live_s8Kd...xT2m", created: "2026-01-10", active: true },
@@ -336,23 +329,49 @@ function NotificationsTab() {
   const emailOn = notificationSettings?.email ?? true
   const inAppOn = notificationSettings?.inApp ?? true
 
+  const saveSettings = async (newPrefs: any) => {
+    try {
+      const res = await apiFetch("/user/notifications/settings", {
+        method: "POST",
+        body: JSON.stringify({ preferences: newPrefs })
+      })
+      setNotificationSettings(res.preferences)
+    } catch (err) {
+      console.error("Error saving preferences:", err)
+      toast.error("설정 저장에 실패했습니다.")
+    }
+  }
+
   const setEmailOn = (val: boolean) => {
-    setNotificationSettings({ ...notificationSettings, email: val })
-    if (val) toast.success("이메일 알림이 켜졌습니다.")
-    else toast("이메일 알림이 꺼졌습니다.")
+    const newPrefs = { ...notificationSettings, email: val }
+    setNotificationSettings(newPrefs) // Optimistic update
+    saveSettings(newPrefs)
+    if (val) toast.success("이메일 알림 채널이 켜졌습니다.")
+    else toast("이메일 알림 채널이 꺼졌습니다.")
   }
 
   const setInAppOn = (val: boolean) => {
-    setNotificationSettings({ ...notificationSettings, inApp: val })
-    if (val) toast.success("인앱 알림이 켜졌습니다.")
-    else toast("인앱 알림이 꺼졌습니다.")
+    const newPrefs = { ...notificationSettings, inApp: val }
+    setNotificationSettings(newPrefs)
+    saveSettings(newPrefs)
+    if (val) toast.success("인앱 알림 채널이 켜졌습니다.")
+    else toast("인앱 알림 채널이 꺼졌습니다.")
+  }
+
+  const toggleEventPref = (eventKey: string, val: boolean) => {
+    const currentEventState = notificationSettings?.[eventKey] ?? true;
+    const newPrefs = { ...notificationSettings, [eventKey]: !currentEventState }
+    setNotificationSettings(newPrefs)
+    saveSettings(newPrefs)
+    if (!currentEventState) toast.success("해당 이벤트 알림이 켜졌습니다.")
+    else toast("해당 이벤트 알림이 꺼졌습니다.")
   }
 
   const events = [
-    { label: "주간 성과 요약 리포트", desc: "매주 월요일 아침, 지난주 성과 요약 이메일", emailDefault: true, inAppDefault: false },
-    { label: "\uCE94\uD398\uC778 \uBAA9\uD45C \uB2EC\uC131 \uC2DC", desc: "\uC2A4\uCE94 \uC218 \uB610\uB294 \uC804\uD658 \uC218 \uBAA9\uD45C \uB2EC\uC131 \uC2DC \uC54C\uB9BC", emailDefault: true, inAppDefault: true },
-    { label: "\uC0C8 \uBC30\uC9C0 \uD68D\uB4DD \uACE0\uAC1D \uBC1C\uC0DD", desc: "\uACE0\uAC1D\uC774 \uC0C8\uB85C\uC6B4 \uC885\uB958\uC758 \uBC30\uC9C0\uB97C \uCC98\uC74C \uD68D\uB4DD\uD588\uC744 \uB54C", emailDefault: false, inAppDefault: true },
-    { label: "중요 공지 및 업데이트", desc: "서비스 관련 중요 공지사항", emailDefault: true, inAppDefault: true },
+    { key: "weekly_report", label: "주간 성과 요약 리포트", desc: "매주 월요일 아침, 지난주 성과 요약 이메일", emailOnly: true },
+    { key: "campaign_milestone", label: "캠페인 목표 달성 시", desc: "스캔 수 또는 전환 수 목표 달성 시 알림", emailOnly: false },
+    { key: "badge_earned", label: "새 배지 획득 고객 발생", desc: "고객이 새로운 종류의 배지를 처음 획득했을 때", emailOnly: false },
+    { key: "important_updates", label: "중요 공지 및 업데이트", desc: "서비스 관련 중요 공지사항", emailOnly: false },
   ]
 
   return (
@@ -420,16 +439,26 @@ function NotificationsTab() {
               </TableHeader>
               <TableBody>
                 {events.map((ev) => (
-                  <TableRow key={ev.label}>
+                  <TableRow key={ev.key}>
                     <TableCell>
                       <span className="block text-sm font-medium text-foreground">{ev.label}</span>
                       <span className="block text-xs text-muted-foreground">{ev.desc}</span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Switch defaultChecked={ev.emailDefault} disabled={!emailOn} />
+                      <Switch
+                        checked={ev.emailOnly ? (notificationSettings?.[ev.key] ?? true) : ((notificationSettings?.[ev.key] ?? true) && emailOn)}
+                        disabled={ev.emailOnly ? false : !emailOn}
+                        onCheckedChange={() => toggleEventPref(ev.key, true)}
+                      />
                     </TableCell>
                     <TableCell className="text-center">
-                      <Switch defaultChecked={ev.inAppDefault} disabled={!inAppOn} />
+                      {!ev.emailOnly && (
+                        <Switch
+                          checked={(notificationSettings?.[ev.key] ?? true) && inAppOn}
+                          disabled={!inAppOn}
+                          onCheckedChange={() => toggleEventPref(ev.key, true)}
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -447,12 +476,81 @@ function NotificationsTab() {
    ═══════════════════════════════════ */
 function TeamTab() {
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [members, setMembers] = useState<any[]>([])
+  const [inviteEmail, setInviteEmail] = useState("")
+  const [inviteRole, setInviteRole] = useState("viewer")
+  const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const { user } = useAuthStore()
+
+  const fetchMembers = async () => {
+    try {
+      const data = await apiFetch("/team")
+      setMembers(data)
+    } catch (err) {
+      console.error("Failed to fetch team members", err)
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchMembers()
+  }, [])
+
+  const handleInvite = async () => {
+    if (!inviteEmail) return toast.error("이메일을 입력해주세요.")
+    setLoading(true)
+    try {
+      await apiFetch("/team/invite", {
+        method: "POST",
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole })
+      })
+      toast.success("초대 이메일을 발송했습니다.")
+      setInviteOpen(false)
+      setInviteEmail("")
+      setInviteRole("viewer")
+      fetchMembers()
+    } catch (err: any) {
+      toast.error(err.message || "멤버 초대에 실패했습니다.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateRole = async (memberId: string, newRole: string) => {
+    try {
+      await apiFetch(`/team/${memberId}/role`, {
+        method: "PATCH",
+        body: JSON.stringify({ role: newRole })
+      })
+      toast.success("역할이 변경되었습니다.")
+      setEditingId(null)
+      fetchMembers()
+    } catch (err: any) {
+      toast.error(err.message || "역할 변경에 실패했습니다.")
+    }
+  }
+
+  const handleRemove = async (memberName: string, memberId: string) => {
+    if (!confirm(`${memberName}님을 팀에서 제외하시겠습니까?`)) return
+    try {
+      await apiFetch(`/team/${memberId}`, {
+        method: "DELETE"
+      })
+      toast.success(`${memberName}님이 팀에서 제거되었습니다.`)
+      fetchMembers()
+    } catch (err: any) {
+      toast.error(err.message || "멤버 제거에 실패했습니다.")
+    }
+  }
 
   const roleColor: Record<string, string> = {
     Admin: "bg-primary/10 text-primary border-primary/20",
     Editor: "bg-accent/10 text-accent border-accent/20",
     Viewer: "bg-muted text-muted-foreground border-border",
   }
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
 
   return (
     <div className="flex flex-col gap-6">
@@ -462,56 +560,58 @@ function TeamTab() {
             <CardTitle className="text-base">팀 멤버</CardTitle>
             <CardDescription>대시보드에 접근할 수 있는 멤버를 관리합니다.</CardDescription>
           </div>
-          <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                <Plus className="size-4" />
-                멤버 초대
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>새 멤버 초대</DialogTitle>
-                <DialogDescription>초대할 팀원의 이메일과 역할을 선택하세요.</DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-4 py-2">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="invite-email">이메일 주소</Label>
-                  <Input id="invite-email" placeholder="teammate@brand.com" type="email" />
+          {isAdmin && (
+            <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="size-4" />
+                  멤버 초대
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>새 멤버 초대</DialogTitle>
+                  <DialogDescription>초대할 팀원의 이메일과 역할을 선택하세요.</DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col gap-4 py-2">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="invite-email">이메일 주소</Label>
+                    <Input id="invite-email" placeholder="teammate@brand.com" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label>역할</Label>
+                    <Select value={inviteRole} onValueChange={setInviteRole}>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">
+                          <div className="flex flex-col">
+                            <span className="font-medium">Admin</span>
+                            <span className="text-xs text-muted-foreground">모든 설정 변경 및 멤버 관리</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="editor">
+                          <div className="flex flex-col">
+                            <span className="font-medium">Editor</span>
+                            <span className="text-xs text-muted-foreground">캠페인, 리워드 생성/수정</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="viewer">
+                          <div className="flex flex-col">
+                            <span className="font-medium">Viewer</span>
+                            <span className="text-xs text-muted-foreground">데이터 조회만 가능</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <Label>역할</Label>
-                  <Select defaultValue="viewer">
-                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">
-                        <div className="flex flex-col">
-                          <span className="font-medium">Admin</span>
-                          <span className="text-xs text-muted-foreground">모든 설정 변경 및 멤버 관리</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="editor">
-                        <div className="flex flex-col">
-                          <span className="font-medium">Editor</span>
-                          <span className="text-xs text-muted-foreground">캠페인, 리워드 생성/수정</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="viewer">
-                        <div className="flex flex-col">
-                          <span className="font-medium">Viewer</span>
-                          <span className="text-xs text-muted-foreground">데이터 조회만 가능</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setInviteOpen(false)}>취소</Button>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => { setInviteOpen(false); toast.success("초대 이메일을 발송했습니다.") }}>초대 보내기</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={loading}>취소</Button>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleInvite} disabled={loading}>{loading ? '초대 중...' : '초대 보내기'}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -520,16 +620,17 @@ function TeamTab() {
                 <TableRow>
                   <TableHead className="min-w-[180px]">멤버</TableHead>
                   <TableHead>역할</TableHead>
-                  <TableHead className="hidden sm:table-cell">마지막 접속</TableHead>
-                  <TableHead className="text-right w-24">관리</TableHead>
+                  <TableHead className="hidden sm:table-cell">가입일</TableHead>
+                  {isAdmin && <TableHead className="text-right w-32">관리</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {teamMembers.map((m) => (
-                  <TableRow key={m.email}>
+                {members.map((m) => (
+                  <TableRow key={m.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
+                          {m.avatar ? <AvatarImage src={m.avatar} /> : null}
                           <AvatarFallback className="bg-secondary text-xs font-semibold text-secondary-foreground">
                             {m.name.slice(0, 1)}
                           </AvatarFallback>
@@ -541,19 +642,34 @@ function TeamTab() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("text-xs", roleColor[m.role])}>{m.role}</Badge>
+                      {editingId === m.id ? (
+                        <Select defaultValue={m.role.toLowerCase()} onValueChange={(val) => handleUpdateRole(m.id, val)}>
+                          <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="editor">Editor</SelectItem>
+                            <SelectItem value="viewer">Viewer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant="outline" className={cn("text-xs", roleColor[m.role] || roleColor['Viewer'])}>{m.role}</Badge>
+                      )}
                     </TableCell>
                     <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">{m.lastAccess}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground" onClick={() => toast(`${m.name}님의 역할을 수정합니다.`)}>
-                          <Pencil className="size-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => toast.success(`${m.name}님이 팀에서 제거되었습니다.`)}>
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        {m.id !== user?.id && (
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground" onClick={() => setEditingId(editingId === m.id ? null : m.id)}>
+                              <Pencil className="size-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemove(m.name, m.id)}>
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
