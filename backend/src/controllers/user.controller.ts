@@ -51,7 +51,7 @@ export const createUserBrand = async (req: Request, res: Response) => {
     }
 };
 
-import axios from 'axios';
+import { Resend } from 'resend';
 
 export const testEmail = async (req: Request, res: Response) => {
     try {
@@ -62,46 +62,47 @@ export const testEmail = async (req: Request, res: Response) => {
             return res.status(400).json({ error: '이메일 주소를 찾을 수 없습니다.' });
         }
 
-        const stibeeKey = process.env.STIBEE_API_KEY;
-        const stibeeEndpoint = process.env.STIBEE_AUTO_EMAIL_ENDPOINT;
+        const resendKey = process.env.RESEND_API_KEY;
 
-        if (!stibeeKey || !stibeeEndpoint) {
+        if (!resendKey) {
             return res.status(400).json({
-                error: 'Stibee 연동이 설정되지 않았습니다.',
-                details: '서버의 .env 파일에 STIBEE_API_KEY 와 STIBEE_AUTO_EMAIL_ENDPOINT 를 설정해주세요.'
+                error: 'Resend API 키가 설정되지 않았습니다.',
+                details: '서버의 .env 파일에 RESEND_API_KEY 를 설정해주세요.'
             });
         }
 
-        // Stibee 자동 이메일 발송 API 호출
-        // 구독자(subscriber) 항목에 이메일을 넣어 발송
-        const response = await axios.post(
-            stibeeEndpoint,
-            {
-                subscribers: [
-                    {
-                        email: targetEmail,
-                        name: user?.name || '고객님'
-                    }
-                ]
-            },
-            {
-                headers: {
-                    'AccessToken': stibeeKey,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+        const resend = new Resend(resendKey);
+
+        const { data, error } = await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: targetEmail,
+            subject: '🔔 아키타이프(Archetype) 테스트 알림 이메일',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">안녕하세요, ${user?.name || '고객'}님!</h2>
+                    <p>요청하신 <strong>이메일 알림 테스트</strong>가 성공적으로 발송되었습니다.</p>
+                    <p>앞으로 목표 달성, 리워드 발급 등의 중요 알림이 이 메일 주소로 전송됩니다.</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #999;">본 메일은 발신 전용이며, 아키타이프 대시보드 테스트 발송 기능에 의해 전송되었습니다.</p>
+                </div>
+            `
+        });
+
+        if (error) {
+            console.error('Resend error:', error);
+            return res.status(400).json({ error: '이메일 발송에 실패했습니다.', details: error });
+        }
 
         res.status(200).json({
-            message: '테스트 이메일이 발송되었습니다.',
-            stibeeResponse: response.data
+            message: '테스트 이메일이 성공적으로 발송되었습니다.',
+            data
         });
 
     } catch (error: any) {
-        console.error('Error sending Stibee email:', error?.response?.data || error.message);
+        console.error('Error sending Resend email:', error.message);
         res.status(500).json({
-            error: '이메일 발송 중 오류가 발생했습니다.',
-            details: error?.response?.data || error.message
+            error: '이메일 발송 중 서버 오류가 발생했습니다.',
+            details: error.message
         });
     }
 };
